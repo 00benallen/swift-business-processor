@@ -9,10 +9,10 @@ import Foundation
 import NIO
 import NIOHTTP1
 
-class HttpHandlerHelloWorld: ChannelInboundHandler {
-    typealias InboundIn = HTTPServerRequestPart
+public class HttpHandlerHelloWorld: ChannelInboundHandler {
+    public typealias InboundIn = HTTPServerRequestPart
     
-    func channelRead(ctx: ChannelHandlerContext, data: NIOAny) {
+    public func channelRead(ctx: ChannelHandlerContext, data: NIOAny) {
         let reqPart: HTTPServerRequestPart = unwrapInboundIn(data)
         
         switch reqPart {
