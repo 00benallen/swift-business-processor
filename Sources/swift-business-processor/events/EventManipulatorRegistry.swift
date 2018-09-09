@@ -43,7 +43,7 @@ class EventManipulatorRegistry {
     }
     
     enum EventManipulatorRegistryError: Error {
-        case EventManipulateSetHasVariedEventIds
+        case EventManipulatorSetHasVariedEventIds
     }
     
     func register(set: EventManipulatorSet) throws {
@@ -56,7 +56,36 @@ class EventManipulatorRegistry {
     
     private func validate(set: EventManipulatorSet) throws {
         
+        let eventID = set.eventID
         
+        let builder = set.builder
+        try validate(eventManipulator: builder, expectedEventID: eventID)
+        
+        let writer = set.writer
+        try validate(eventManipulator: writer, expectedEventID: eventID)
+        
+        let reader = set.reader
+        try validate(eventManipulator: reader, expectedEventID: eventID)
+        
+        let processor = set.processor
+        try validate(eventManipulator: processor, expectedEventID: eventID)
+    }
+    
+    private func validate(eventManipulator: EventManipulator?, expectedEventID: UUID) throws {
+        
+        if eventManipulator != nil {
+            
+            let eventManipulatorID = retrieveEventID(from: eventManipulator!)
+            
+            if expectedEventID != eventManipulatorID {
+                throw EventManipulatorRegistryError.EventManipulatorSetHasVariedEventIds
+            }
+        }
+    }
+    
+    private func retrieveEventID(from: EventManipulator) -> UUID {
+        
+        return type(of: from).manipulatableEventID
         
     }
     
