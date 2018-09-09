@@ -9,36 +9,37 @@ import Foundation
 
 public protocol Event {
     
-    associatedtype DataType
-    
-    var uniqueEventId: String { get set }
-    var eventData: DataType { get set }
+    static var eventID: UUID { get }
+    var eventData: Any { get set }
     
 }
 
-protocol EventProducer {
+public protocol EventManipulator {
+    static var manipulatableEventID: UUID { get }
+}
+
+public protocol EventBuilder: EventManipulator {
     
-    associatedtype EventType: Event
-    
-    var eventType: EventType { get set }
-    
-    func writeEvent(event: EventType)
+    func buildEvent(input: Any) -> Event
     
 }
 
-protocol EventTransformer {
+public protocol EventQueueWriter: EventManipulator {
     
-    associatedtype EventType: Event
-    associatedtype Output
+    var builder: EventBuilder? {get set}
     
-    func transformEvent(event: EventType) -> Output
+    func writeToQueue(input: Event) -> Void
     
 }
 
-protocol EventReader {
+public protocol EventQueueReader: EventManipulator {
     
-    associatedtype EventType: Event
+    func readFromQueue() -> Event
     
-    func readEvent(uniqueEventId: String) -> EventType
+}
+
+public protocol EventProcessor: EventManipulator {
+    
+    func processEvent(input: Event) -> Any?
     
 }
