@@ -16,11 +16,14 @@ class HttpServer<T: ChannelInboundHandler> {
     }
     
     let bootstrap: ServerBootstrap
+    var serverChannel: Channel?
+    var loopGroup: MultiThreadedEventLoopGroup?
     
     init(port: Int = 8080, autostart: Bool = false, httpHandler: T) throws {
         
         //Initialize event loop group, works like a concurrent queue of events-ish
         let loopGroup = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
+        self.loopGroup = loopGroup
         
         //Initialize socket configuration properties
         let reuseAddrOpt = ChannelOptions.socket(
@@ -52,6 +55,8 @@ class HttpServer<T: ChannelInboundHandler> {
         
         self.bootstrap = bootstrap
         
+        print("HttpServer boostrapped. Autostart: \(autostart)")
+        
         if autostart {
             try start(port: port)
         }
@@ -60,12 +65,12 @@ class HttpServer<T: ChannelInboundHandler> {
     func start(port: Int) throws {
         
         do {
-            let serverChannel =
+            serverChannel =
                 try bootstrap.bind(host: "localhost", port: port)
                     .wait()
-            print("Server running on:", serverChannel.localAddress!)
+            print("Server running on:", serverChannel?.localAddress ?? "unknown")
             
-            try serverChannel.closeFuture.wait() // runs forever
+            try serverChannel?.closeFuture.wait() // runs forever
         }
         catch {
             throw HttpServerError.ServerStartFailed
