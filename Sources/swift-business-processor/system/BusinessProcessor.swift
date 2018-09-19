@@ -13,6 +13,12 @@ public class BusinessProcessor {
     
     static let pathHandlerRegistry: PathHandlerRegistry = PathHandlerRegistry()
     
+    static let eventProcessingQueue = DispatchQueue(
+        label: "BusinessProcessor[\(UUID.init())]-dispatchQueue",
+        qos: .userInteractive,
+        attributes: DispatchQueue.Attributes.concurrent,
+        autoreleaseFrequency: DispatchQueue.AutoreleaseFrequency.inherit)
+    
     private static var started = false
     
     struct Configuration {
@@ -37,8 +43,10 @@ public class BusinessProcessor {
         do {
             print("Starting up HttpServer")
             try self.server = HttpServer(port: config.httpServerPort, autostart: false, httpHandler: HttpHandler())
+            let closeFuture = try self.server?.start(port: 8080)
             started = true
-            try self.server?.start(port: 8080)
+            
+            try closeFuture?.wait() //blocks forever
         } catch {
             throw BusinessProcessorError.HttpServerCouldNotStart
         }
@@ -66,5 +74,4 @@ public class BusinessProcessor {
         
         print("Shutting down...")
     }
-    
 }

@@ -1,13 +1,12 @@
 //
 //  ShutdownEvent.swift
-//  CNIOAtomics
 //
 //  Created by Ben Pinhorn on 2018-09-11.
 //
 
 import Foundation
 
-class ShutdownEvent: Event {
+class ShutdownEvent: HttpInputEvent<ShutdownEvent.ShutdownData> {
     
     enum ShutdownUrgency: String, Decodable {
         case IMMEDIATE
@@ -27,26 +26,13 @@ class ShutdownEvent: Event {
     
     typealias DataType = ShutdownData
     
-    var eventID: UUID
-    
-    var eventData: ShutdownEvent.ShutdownData
-    
-    init(eventID: UUID, eventData: ShutdownData) {
+    init(eventID: UUID, eventData: Data) throws {
         
-        self.eventID = eventID
-        self.eventData = eventData
-    }
-    
-    func writeToQueue(eventQueue: Any) {
+        try super.init(eventID: eventID, rawHttpBody: eventData)
         
     }
     
-    static func readFromQueue<EventType>(eventQueue: Any) -> EventType? where EventType : Event {
-        
-        return nil
-    }
-    
-    func process() {
+    override func process() {
         
         DispatchQueue.global().async {
             switch self.eventData.urgency {

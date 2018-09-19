@@ -58,19 +58,17 @@ class HttpServer<T: ChannelInboundHandler> {
         print("HttpServer boostrapped. Autostart: \(autostart)")
         
         if autostart {
-            try start(port: port)
+            try start(port: port)?.wait() //blocks here forever
         }
     }
     
-    func start(port: Int) throws {
+    func start(port: Int) throws -> EventLoopFuture<Void>? {
         
         do {
-            serverChannel =
-                try bootstrap.bind(host: "localhost", port: port)
-                    .wait()
+            serverChannel = try bootstrap.bind(host: "localhost", port: port).wait()
             print("Server running on:", serverChannel?.localAddress ?? "unknown")
             
-            try serverChannel?.closeFuture.wait() // runs forever
+           return serverChannel?.closeFuture
         }
         catch {
             throw HttpServerError.ServerStartFailed
